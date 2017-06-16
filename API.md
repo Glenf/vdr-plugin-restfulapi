@@ -1,5 +1,16 @@
 # RESTFULAPI-Plugin for VDR
 
+Version 0.2.3.7
+
+Copyright © 2015 yavdr-Team, Michael Eiler
+
+| | |
+|-|-|
+| Organization/Community | team@yavdr.org |
+| Developer | eiler.mike@gmail.com or aelo@yavdr.org |
+| Website | www.yavdr.org |
+| Source | www.github.com/yavdr/vdr-plugin-restfulapi |
+
 ## Table Of Contents
 
 1. Preface
@@ -93,7 +104,7 @@ Create a new file called plugin.restfulapi.conf in /etc/vdr/plugins/ respectivel
 ## Channels
 This service returns a list of channels.
 
-** Examples **
+**Examples**
 
 | Method | URL |
 |-|-|
@@ -108,7 +119,7 @@ This service returns a list of channels.
 | start | Start is the first element you want to retrieve |
 | limit | Limit... |
 
-** XML response **
+**XML response**
 
 ```xml
 GET http://127.0.0.1:8002/channels.xml?start=0&limit=1
@@ -133,7 +144,7 @@ GET http://127.0.0.1:8002/channels.xml?start=0&limit=1
         <total>259</total>
 </channels>
 ```
-** JSON response **
+**JSON response**
 
 ```json
 GET http://127.0.0.1:8002/channels.json?start=0&limit=1
@@ -174,7 +185,7 @@ This service will return a list containing all channel groups.
 | format | json, xml or html |
 | group | returns the channels of the requested group |
 
-** XML response **
+**XML response**
 ```xml
 GET http://<ip>:<port>/channels/groups.xml?start=0&limit=3
 <?xml version="1.0" encoding="UTF-8" standalone="yes"?>
@@ -187,7 +198,7 @@ GET http://<ip>:<port>/channels/groups.xml?start=0&limit=3
 </groups>
 ```
 
-** JSON response **
+**JSON response**
 
 ```json
 GET http://<ip>:<port>/channels/groups.json?start=0&limit=3
@@ -201,3 +212,298 @@ GET http://<ip>:<port>/channels/groups.json?start=0&limit=3
     "total":3
 }
 ```
+
+## Events / EPG
+
+This service returns the epg information.
+
+Since Version 0.2.0 the API returns additional media if a scraper plugin is available.
+The data is available within additional_media node and contains additional information about the event such as actors etc.
+
+Images can be retrieved using ScraperImages service.
+
+| Method | URL |
+|-|-|
+| GET | ```http://<ip>:<port>/events.<format>?chevents=1 ``` |
+| GET | ```http://<ip>:<port>/events/<channelid>.<format>?chevents=1&from=<from> ``` |
+| GET | ```http://<ip>:<port>/events/<channelid>.<format>?timespan=<timespan>``` |
+| GET | ```http://<ip>:<port>/events/<channelid>/<eventid>.<format> ``` |
+| GET | ```http://<ip>:<port>/events/<channelid>.<format>?timespan=<timespan>&from=<from>&start=<start>&limit=<limit>``` |
+
+| Param | Description |
+|-|-|
+| format | The requested format: json, xml or html. |
+| channelid | (optional) id of the channel, if not set the plugin will return the whole epg sorted by your channel | list
+| timespan | the timespan from which you want to know the event-details, if set to 0 - all events in the future | will be returned
+| from | (optional) time in the future when the requested events should end/start (default-value: now) |
+| eventid | (optional) if you only want the details of a specific event |
+| chevents | (optional) the count of events for each channel |
+| chfrom | (optional) start number of the channel, from where events will be returned |
+| chto | (optional) end number of the channel, through events will be returned |
+| only_count | (optional) if you just want to know the amount of available epg items |
+| format | The requested format: json, xml or html. |
+
+**XML response**
+```xml
+GET http://<ip>:<port>/events/C-1-1079-11110.xml?chevents=1&from=1432577700
+
+<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<events xmlns="http://www.domain.org/restfulapi/2011/events-xml">
+    <event>
+        <param name="id">588333</param>
+        <param name="title">Title</param>
+        <param name="short_text">Humor (D 2010)</param>
+        <param name="description">Description Text</param>
+        <param name="channel">C-1-1079-11110</param>
+        <param name="channel_name">ZDF HD</param>
+        <param name="start_time">1432577700</param>
+        <param name="duration">5400</param>
+        <param name="table_id">80</param>
+        <param name="version">25</param>
+        <param name="parental_rating">0</param>
+        <param name="vps">1432577700</param>
+        <param name="details"></param>
+        <param name="images">3</param>
+        <param name="components">
+            <component stream="2" type="3" language="deu" description="Stereo" />
+            <component stream="2" type="3" language="mis" description="Audiodeskription" />
+            <component stream="2" type="3" language="mul" description="ohne Originalton" />
+            <component stream="3" type="32" language="deu" description="DVB-Untertitel" />
+            <component stream="4" type="66" language="deu" description="Dolby Digital 2.0" />
+            <component stream="5" type="11" language="deu" description="HDTV" />
+        </param>
+        <param name="contents"></param>
+        <param name="raw_contents"></param>
+        <param name="timer_exists">false</param>
+        <param name="timer_active">false</param>
+        <param name="timer_id"></param>
+        <param name="additional_media" type="movie">
+            <movie_id>329933</movie_id>
+            <title>Title</title>
+            <original_title>Original Title</original_title>
+            <overview>Overview Text</overview>
+            <adult>false</adult>
+            <genres>Komödie , Lovestory</genres>
+            <release_date>2010-06-01</release_date>
+            <runtime>90</runtime>
+            <poster path="movies/329933/poster.jpg" width="500" height="750" />
+            <fanart path="movies/329933/fanart.jpg" width="1280" height="720" />
+            <actor name="Name" role="Role" thumb="movies/actors/actor_49104.jpg"/>
+        </param>
+    </event>
+    <count>1</count>
+    <total>257</total>
+</events>
+```
+
+**JSON response**
+
+```json
+GET http://<ip>:<port>/events/C-1-1079-11110.json?chevents=1&from=1432577700
+
+{
+    "events": [
+        {
+            "id": 588333,
+            "title": "Title",
+            "short_text": "Short Title",
+            "description": "Description Text",
+            "start_time": 1432577700,
+            "channel": "C-1-1079-11110",
+            "channel_name": "ZDF HD",
+            "duration": 5400,
+            "table_id": 80,
+            "version": 25,
+            "images": 3,
+            "timer_exists": false,
+            "timer_active": false,
+            "timer_id": "",
+            "parental_rating": 0,
+            "vps": 1432577700,
+            "components": [
+                {
+                    "stream": 2,
+                    "type": 3,
+                    "language":
+                    "deu",
+                    "description": "Stereo"
+                }, {
+                    "stream": 2,
+                    "type": 3,
+                    "language": "mis",
+                    "description": "Audiodeskription"
+                }, {
+                    "stream": 2, "type": 3,
+                    "language": "mul",
+                    "description": "ohne Originalton"
+                }, {
+                    "stream": 3,
+                    "type": 32,
+                    "language": "deu",
+                    "description": "DVB-Untertitel"
+                }, {
+                    "stream": 4,
+                    "type": 66,
+                    "language": "deu",
+                    "description": "Dolby Digital 2.0"
+                }, {
+                    "stream": 5,
+                    "type": 11,
+                    "language": "deu",
+                    "description": "HDTV"
+                }
+            ],
+            "contents": [],
+            "raw_contents": [],
+            "details": [],
+            "additional_media": {
+                "type": "movie",
+                "movie_id": 329933,
+                "title": "Title",
+                "original_title": "Original Title",
+                "tagline": "",
+                "overview": "Overview Text",
+                "adult": false,
+                "collection_name": "",
+                "budget": 0,
+                "revenue": 0,
+                "genres": "Komödie , Lovestory",
+                "homepage": "",
+                "release_date": "2010-06-01",
+                "runtime": 90,
+                "popularity": 0,
+                "vote_average": 0,
+                "poster": "movies/329933/poster.jpg",
+                "fanart": "movies/329933/fanart.jpg",
+                "collection_poster": "",
+                "collection_fanart": "",
+                "actors": [
+                    {
+                        "name": "Name",
+                        "role": "Role",
+                        "thumb": "movies/actors/actor_49104.jpg"
+                    }
+                ]
+            }
+        }
+    ],
+    "count": 1,
+    "total": 257
+}
+```
+
+### Images
+
+This service returns the requested epg image.
+
+
+| Method | URL |
+|-|-|
+| GET | ```http://<ip>:<port>/events/image/<eventid>/<imagenumber>``` |
+
+| Param | Description |
+|-|-|
+| eventid | Id of the event |
+| imagenumber | the number of the image, in the above mentioned examples it would be 0,1 or 2 |
+
+### Search
+
+This service allows you to search for events.
+
+Since Version 0.2.4.0 it is possible to perform a search similar to Searchtimers.
+
+| Method | URL |
+|-|-|
+| POST | ```http://<ip>:<port>/events/search.<format>?limit=5&start=0``` |
+
+| Param | Description |
+|-|-|
+| limit | (optional) number of searchresults |
+| start | (required if limit is set) start at result |
+| date_limit | (optional) UNIX timestamp until events are returned (since 0.2.4.1) |
+
+**HTTP-Body parameters**
+
+| Name | Type | Required | Value Range / Example |
+| ---- | ---- | -------- | --------------------- |
+| search                | string    | yes |  |
+| mode                  | int       | yes | 0=phrase, 1=all words, 2=at least one word, 3=match exactly, 4=regex, 5=fuzzy |
+| tolerance             | int       | if mode == 5 | |
+| match_case            | boolean   | 	
+| use_title             | boolean   | at least one of use_title, use_subtitle, use_description | |
+| use_subtitle          | boolean   | at least one of use_title, use_subtitle, use_description | |
+| use_description       | boolean   | at least one of use_title, use_subtitle, use_description | |
+| content_descriptors   | string    | no | concatted string of content descriptor ids |
+| use_ext_epg_info      | boolean   | no |  |
+| ext_epg_info          | array     |    | [1#2,2#test] |
+| use_time              | boolean   | no |  |
+| start_time            | int       | no |  |
+| stop_time             | int       | no |  |
+| use_channel           | boolean   | no | 	0=no, 1=interval, 2=channel group, 3=only FTA |
+| channel_min           | string    | no | 	channel id |
+| channel_max           | string    | no | 	channel id |
+| channels              | string    | if use_channel > 0 | channel group name |
+| use_duration          | boolean   | no |  |
+| duration_min          | int       | if use_duration == true | |
+| duration_max          | int       | if use_duration == true | |
+| use_dayofweek         | boolean   | no |  |
+| dayofweek             | int       | if use_dayofweek == true | -127 - 6 |
+| blacklist_mode        | int       | no | 	0=global, 1=Selection, 2=all, 3=none |
+| blacklist_ids         | array     | if blacklist_mode == 1 | array of blacklist ids |
+
+**Example: Simple search**
+```
+POST http://<ip>:<port>/events/search.<format>?limit=5&start=0;
+```
+
+| Param | Description |
+|-|-|
+| limit | (optional) number of searchresults |
+| start | (required if limit is set) start at result |
+
+**HTTP-Body parameters**
+
+| Param | Description |
+|-|-|
+| query | (required) |
+| mode | (required) 0=phrase, 1=and, 2=or, 3=exact, 4=regex, 5=fuzzy |
+| channelid | (optional) if id invalid, the plugin will search on every channel |
+| use_title | (optional, default) search in the title |
+| use_subtitle | (optional) |
+| use_description | (optional) |
+
+**Example**
+```json
+{"query":"Asterix", "mode":0, "channelid":0,"use_title":true}
+```
+
+### Fetch content descriptors
+
+```
+GET http://<ip>:<port>/events/contentdescriptors.<format>
+```
+
+```json
+{
+    "content_descriptors": [
+        {
+            "id": "10",
+            "name": "Film/Drama",
+            "is_group": true
+        },
+        {
+            "id": "11",
+            "name": "Detektiv/Thriller",
+            "is_group": false
+        }, {
+            "id": "12",
+            "name": "Abenteuer/Western/Krieg",
+            "is_group": false
+        },
+    ],
+    "count": 79,
+    "total": 79
+}
+```
+
+## Info
